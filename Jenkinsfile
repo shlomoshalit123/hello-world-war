@@ -1,7 +1,7 @@
 pipeline {
     environment {
-        nexus = "16.170.159.69:5000"
-        sonarqube = "16.16.202.172:9000"
+        nexus = "13.53.36.230:5000"
+        sonarqube = "13.51.235.14:9000"
         docker_image_name = "hello-world-war"
     }
 

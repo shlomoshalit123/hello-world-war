@@ -1,23 +1,57 @@
-// Uses Declarative syntax to run commands inside a container.
 pipeline {
-
-    agent { 
-        label 'centos7' 
+    environment {
+        nexus = "16.170.159.69:5000"
+        sonarqube = "16.16.202.172:9000"
+        docker_image_name = "hello-world-war"
     }
 
-    triggers {
-  pollSCM '* * * * *'
-}
+    agent {
+        label 'ubuntu'
+    }
+
     stages {
-        stage('checkout code') {
+        stage('Checkout Code') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'github-ssh', url: 'git@github.com:lidorg-dev/hello-world-war.git']]])
+                cleanWs()
+                checkout scmGit(branches: [[name: '*/dev']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/shlomoshalit123/hello-world-war.git']])
+            }
+        }
+        stage('SonarQube analysis') {
+            steps {
+                withSonarQubeEnv(credentialsId: 'sonarqube-aws', installationName: 'sonarqube-aws') { // You can override the credential to be used
+                    // sh 'printenv'
+                     sh '''mvn clean verify sonar:sonar \
+                      -Dsonar.projectKey=final-project \
+                      -Dsonar.projectName='final-project' \
+                      -Dsonar.host.url=http://${sonarqube} \
+                      -Dsonar.token=sqp_22dbe3fe8e074d9054238746dadce8c3b8c18f15'''
+                }
             }
         }
         stage('Build') {
             steps {
-                sh "docker build -t war:$BUILD_ID ."
+                sh 'cat Build_Dockerfile'
+                // sh 'echo ${nexus}'
+                // sh 'printenv'
+                sh 'docker build -f Build_Dockerfile -t "${nexus}/${docker_image_name}:${BUILD_NUMBER}" .'
+            }
+        }
+        stage('Publish') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'nexus', passwordVariable: 'nexus_password', usernameVariable: 'nexus_user')]) {
+                sh 'docker login -u ${nexus_user} -p ${nexus_password} http://${nexus}'
+                sh 'docker push ${nexus}/${docker_image_name}:${BUILD_NUMBER}'
+                }
             }
         }
     }
+    post {
+       always {
+            sh 'echo ***** CLEANUP *****;'
+            sh 'echo ***** Pipeline will delete the following images created during this run *****;'
+            sh 'docker images --filter=reference="${nexus}/${docker_image_name}:${BUILD_NUMBER}"'
+            sh 'docker rmi -f $(docker images --filter=reference="${nexus}/${docker_image_name}:${BUILD_NUMBER}" -q)'
+        }
+    }
+
 }

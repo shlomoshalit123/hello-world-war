@@ -16,39 +16,39 @@ pipeline {
                 checkout scmGit(branches: [[name: '*/dev']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/shlomoshalit123/hello-world-war.git']])
             }
         }
-        // stage('SonarQube analysis') {
-        //     steps {
-        //         withSonarQubeEnv(credentialsId: 'sonarqube-aws', installationName: 'sonarqube-aws') { // You can override the credential to be used
-        //              sh '''mvn clean verify sonar:sonar \
-        //               -Dsonar.projectKey=final-project \
-        //               -Dsonar.projectName='final-project' \
-        //               -Dsonar.host.url=http://${sonarqube} \
-        //               -Dsonar.token=sqp_22dbe3fe8e074d9054238746dadce8c3b8c18f15'''
-        //         }
-        //     }
-        // }
-        // stage('Build') {
-        //     steps {
-        //         sh 'cat Dockerfile'
-        //         sh 'docker build -f Dockerfile -t "${nexus}/${docker_image_name}:${BUILD_NUMBER}" .'
-        //     }
-        // }
-        // stage('Publish') {
-        //     steps {
-        //         withCredentials([usernamePassword(credentialsId: 'nexus', passwordVariable: 'nexus_password', usernameVariable: 'nexus_user')]) {
-        //         sh 'docker login -u ${nexus_user} -p ${nexus_password} http://${nexus}'
-        //         sh 'docker push ${nexus}/${docker_image_name}:${BUILD_NUMBER}'
-        //         }
-        //     }
-        // }
+        stage('SonarQube analysis') {
+            steps {
+                withSonarQubeEnv(credentialsId: 'sonarqube-aws', installationName: 'sonarqube-aws') { // You can override the credential to be used
+                     sh '''mvn clean verify sonar:sonar \
+                      -Dsonar.projectKey=final-project \
+                      -Dsonar.projectName='final-project' \
+                      -Dsonar.host.url=http://${sonarqube} \
+                      -Dsonar.token=sqp_22dbe3fe8e074d9054238746dadce8c3b8c18f15'''
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'cat Dockerfile'
+                sh 'docker build -f Dockerfile -t "${nexus}/${docker_image_name}:${BUILD_NUMBER}" .'
+            }
+        }
+        stage('Publish') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'nexus', passwordVariable: 'nexus_password', usernameVariable: 'nexus_user')]) {
+                sh 'docker login -u ${nexus_user} -p ${nexus_password} http://${nexus}'
+                sh 'docker push ${nexus}/${docker_image_name}:${BUILD_NUMBER}'
+                }
+            }
+        }
     }
-    // post {
-    //    always {
-    //         sh 'echo ***** CLEANUP *****;'
-    //         sh 'echo ***** Pipeline will delete the following images created during this run *****;'
-    //         sh 'docker images --filter=reference="${nexus}/${docker_image_name}:${BUILD_NUMBER}"'
-    //         sh 'docker rmi -f $(docker images --filter=reference="${nexus}/${docker_image_name}:${BUILD_NUMBER}" -q)'
-    //     }
-    // }
+    post {
+       always {
+            sh 'echo ***** CLEANUP *****;'
+            sh 'echo ***** Pipeline will delete the following images created during this run *****;'
+            sh 'docker images --filter=reference="${nexus}/${docker_image_name}:${BUILD_NUMBER}"'
+            sh 'docker rmi -f $(docker images --filter=reference="${nexus}/${docker_image_name}:${BUILD_NUMBER}" -q)'
+        }
+    }
 
 }

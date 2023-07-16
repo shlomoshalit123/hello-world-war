@@ -1,7 +1,7 @@
 pipeline {
     environment {
-        nexus = "13.53.36.230:5000"
-        sonarqube = "13.51.235.14:9000"
+        nexus = "13.50.194.17:5000"
+        sonarqube = "13.53.37.168:9000"
         docker_image_name = "hello-world-war"
     }
 
@@ -19,7 +19,6 @@ pipeline {
         stage('SonarQube analysis') {
             steps {
                 withSonarQubeEnv(credentialsId: 'sonarqube-aws', installationName: 'sonarqube-aws') { // You can override the credential to be used
-                    // sh 'printenv'
                      sh '''mvn clean verify sonar:sonar \
                       -Dsonar.projectKey=final-project \
                       -Dsonar.projectName='final-project' \
@@ -30,10 +29,8 @@ pipeline {
         }
         stage('Build') {
             steps {
-                sh 'cat Build_Dockerfile'
-                // sh 'echo ${nexus}'
-                // sh 'printenv'
-                sh 'docker build -f Build_Dockerfile -t "${nexus}/${docker_image_name}:${BUILD_NUMBER}" .'
+                sh 'cat Dockerfile'
+                sh 'docker build -f Dockerfile -t "${nexus}/${docker_image_name}:${BUILD_NUMBER}" .'
             }
         }
         stage('Publish') {

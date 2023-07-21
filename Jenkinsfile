@@ -53,7 +53,11 @@ pipeline {
             sh 'echo ***** Pipeline will delete the following images created during this run *****;'
             sh 'docker images --filter=reference="${nexus}/${docker_image_name}:${BUILD_NUMBER}" 2>/dev/null'
             sh 'docker rmi -f $(docker images --filter=reference="${nexus}/${docker_image_name}:${BUILD_NUMBER}" -q) 2>/dev/null'
-            mail bcc: '', body: "build status ${BUILD_STATUS}", cc: '', from: '', replyTo: '', subject: "Build ${BUILD_STATUS}", to: "${RECIPIENTS}"
+            script {
+                EMAIL_BODY = "Build Name: ${JOB_BASE_NAME}\nBuild ID:${BUILD_ID}\nStatus: ${BUILD_STATUS}\nLink: ${RUN_DISPLAY_URL}"
+                EMAIL_SUBJECT = "BUILD ${JOB_BASE_NAME} ${BUILD_STATUS}"
+            }
+            mail bcc: '', body: "${EMAIL_BODY}", cc: '', from: '', replyTo: '', subject: "${EMAIL_SUBJECT}", to: "${RECIPIENTS}"
         }
     }
 

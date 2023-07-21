@@ -4,6 +4,7 @@ pipeline {
         sonarqube = "13.53.38.182:9000"
         docker_image_name = "hello-world-war"
         BUILD_STATUS='FAILED'
+        RECIPIENTS='shalitshlomo@gmail.com'
     }
 
     agent {
@@ -52,7 +53,7 @@ pipeline {
             sh 'echo ***** Pipeline will delete the following images created during this run *****;'
             sh 'docker images --filter=reference="${nexus}/${docker_image_name}:${BUILD_NUMBER}" 2>/dev/null'
             sh 'docker rmi -f $(docker images --filter=reference="${nexus}/${docker_image_name}:${BUILD_NUMBER}" -q) 2>/dev/null'
-            mail bcc: '', body: 'build status ${BUILD_STATUS}', cc: '', from: '', replyTo: '', subject: 'Build ${BUILD_STATUS}', to: 'shalitshlomo@gmail.com'
+            mail bcc: '', body: "build status ${BUILD_STATUS}", cc: '', from: '', replyTo: '', subject: "Build ${BUILD_STATUS}", to: "${RECIPIENTS}"
         }
     }
 

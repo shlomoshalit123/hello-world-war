@@ -3,6 +3,7 @@ pipeline {
         nexus = "13.50.194.17:5000"
         sonarqube = "13.53.37.168:9000"
         docker_image_name = "hello-world-war"
+        BUILD_STATUS='FAILED'
     }
 
     agent {
@@ -39,6 +40,9 @@ pipeline {
                 sh 'docker login -u ${nexus_user} -p ${nexus_password} http://${nexus}'
                 sh 'docker push ${nexus}/${docker_image_name}:${BUILD_NUMBER}'
                 }
+                script {
+                    BUILD_STATUS = 'COMPLETED'
+                }
             }
         }
     }
@@ -48,6 +52,7 @@ pipeline {
             sh 'echo ***** Pipeline will delete the following images created during this run *****;'
             sh 'docker images --filter=reference="${nexus}/${docker_image_name}:${BUILD_NUMBER}"'
             sh 'docker rmi -f $(docker images --filter=reference="${nexus}/${docker_image_name}:${BUILD_NUMBER}" -q)'
+            mail bcc: '', body: 'build status ${BUILD_STATUS}', cc: '', from: '', replyTo: '', subject: 'Build ${BUILD_STATUS}', to: 'shalitshlomo@gmail.com'
         }
     }
 

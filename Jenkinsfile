@@ -12,7 +12,7 @@ pipeline {
     }
 
     triggers {
-        cron('* * * * *')
+        pollSCM('* * * * *')
     }
 
     stages {

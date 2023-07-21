@@ -11,6 +11,10 @@ pipeline {
         label 'ubuntu'
     }
 
+    triggers {
+        cron('* * * * *')
+    }
+
     stages {
         stage('Checkout Code') {
             steps {
@@ -60,5 +64,4 @@ pipeline {
             mail bcc: '', body: "${EMAIL_BODY}", cc: '', from: '', replyTo: '', subject: "${EMAIL_SUBJECT}", to: "${RECIPIENTS}"
         }
     }
-
 }

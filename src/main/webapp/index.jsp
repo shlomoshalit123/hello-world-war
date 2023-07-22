@@ -3,8 +3,8 @@
 <title>Hello World!</title>
 </head>
 <body>
-	<h1>Hello and Welcome to Lidor's World!</h1>
-	<h2>DEVOPS-ACADEMY - DEVOPS COURSE</h2>
+	<h1>Hello and Welcome to Shlomi's World!</h1>
+	<h2>INT DEVOPS - July 2022</h2>
 	<p>
 		It is now  
 		<%= new java.util.Date() %></p>
